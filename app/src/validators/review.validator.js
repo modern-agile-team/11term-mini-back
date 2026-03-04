@@ -53,13 +53,20 @@ exports.createReviewValidator = [
     .withMessage("유효한 상품 ID가 아닙니다.")
     .toInt(),
 
-  body().custom((value, { req }) => {
-    const files = req.files || [];
-    if (files.length > 3) {
-      throw new Error("이미지는 최대 3장까지 업로드 가능합니다.");
-    }
-    return true;
-  }),
+  body("images")
+    .optional()
+    .custom((value) => {
+      if (!Array.isArray(value)) {
+        throw new Error("images는 배열 형식이어야 합니다.");
+      }
+      if (value.length > 3) {
+        throw new Error("이미지는 최대 3장까지 업로드 가능합니다.");
+      }
+      if (!value.every((url) => typeof url === "string" && url.trim().length > 0)) {
+        throw new Error("유효하지 않은 이미지 URL 형식입니다.");
+      }
+      return true;
+    }),
 ];
 
 exports.getSellerReviewsValidator = [
@@ -115,13 +122,20 @@ exports.updateReviewValidator = [
       }
     }),
 
-  body().custom((value, { req }) => {
-    const files = req.files || [];
-    if (files.length > 3) {
-      throw new Error("이미지는 최대 3장까지 업로드 가능합니다.");
-    }
-    return true;
-  }),
+  body("images")
+    .optional()
+    .custom((value) => {
+      if (!Array.isArray(value)) {
+        throw new Error("images는 배열 형식이어야 합니다.");
+      }
+      if (value.length > 3) {
+        throw new Error("이미지는 최대 3장까지 업로드 가능합니다.");
+      }
+      if (!value.every((url) => typeof url === "string" && url.trim().length > 0)) {
+        throw new Error("유효하지 않은 이미지 URL 형식입니다.");
+      }
+      return true;
+    }),
 ];
 
 exports.deleteReviewValidator = [

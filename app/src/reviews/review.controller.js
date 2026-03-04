@@ -5,21 +5,41 @@ class ReviewController {
     this.reviewService = reviewService;
   }
 
+  parseJsonArrayField = (value, fieldName) => {
+    if (value === undefined) {
+      return undefined;
+    }
+
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    if (typeof value === "string") {
+      try {
+        const parsed = JSON.parse(value);
+
+        if (!Array.isArray(parsed)) {
+          const CustomError = require("../utils/customError");
+          throw new CustomError(`${fieldName} 형식이 올바르지 않습니다.`, 400);
+        }
+
+        return parsed;
+      } catch (error) {
+        const CustomError = require("../utils/customError");
+        throw new CustomError(`${fieldName} 형식이 올바르지 않습니다.`, 400);
+      }
+    }
+
+    const CustomError = require("../utils/customError");
+    throw new CustomError(`${fieldName} 형식이 올바르지 않습니다.`, 400);
+  };
+
   createReview = async (req, res, next) => {
     try {
       const userId = req.user.id;
-      const { sellerId, rating, content, tags, productId } = req.body;
-      const files = req.files || [];
-
-      let parsedTags = [];
-      if (tags) {
-        try {
-          parsedTags = JSON.parse(tags);
-        } catch (error) {
-          const CustomError = require("../utils/customError");
-          throw new CustomError("태그 형식이 올바르지 않습니다.", 400);
-        }
-      }
+      const { sellerId, rating, content, tags, productId, images } = req.body;
+      const parsedTags = this.parseJsonArrayField(tags, "태그") || [];
+      const parsedImages = this.parseJsonArrayField(images, "이미지") || [];
 
       const reviewId = await this.reviewService.createReview({
         userId,
@@ -28,7 +48,7 @@ class ReviewController {
         rating: Number(rating),
         content,
         tags: parsedTags,
-        files,
+        imageUrls: parsedImages,
       });
 
       res.status(201).json({
@@ -62,24 +82,15 @@ class ReviewController {
     try {
       const userId = req.user.id;
       const reviewId = Number(req.params.reviewId);
-      const { rating, content, tags } = req.body;
-      const files = req.files || [];
-
-      let parsedTags = [];
-      if (tags) {
-        try {
-          parsedTags = JSON.parse(tags);
-        } catch (error) {
-          const CustomError = require("../utils/customError");
-          throw new CustomError("태그 형식이 올바르지 않습니다.", 400);
-        }
-      }
+      const { rating, content, tags, images } = req.body;
+      const parsedTags = this.parseJsonArrayField(tags, "태그");
+      const parsedImages = this.parseJsonArrayField(images, "이미지");
 
       await this.reviewService.updateReview(userId, reviewId, {
         rating: Number(rating),
         content,
         tags: parsedTags,
-        files,
+        imageUrls: parsedImages,
       });
 
       res.status(200).json({
