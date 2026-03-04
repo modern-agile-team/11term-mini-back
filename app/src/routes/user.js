@@ -23,10 +23,16 @@ const userController = new UserController(userService);
 router.patch(
   "/update/users/me",
   authGuard(),
-  uploadProfileImage,
   updateProfileValidator,
   validate,
   userController.updateProfile
+);
+
+router.post(
+  "/profile/image",
+  authGuard(),
+  uploadProfileImage.single("image"),
+  userController.updateProfileImage
 );
 
 router.patch(

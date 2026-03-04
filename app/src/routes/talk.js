@@ -9,7 +9,7 @@ const ProductRepository = require("../products/product.repository");
 
 const { createChatRoomValidator, getMessagesValidator } = require("../validators/talk.validator");
 const validate = require("../middleware/validate");
-const { upload } = require("../middleware/upload.middleware");
+const { upload, uploadProductImage } = require("../middleware/upload.middleware");
 const authGuard = require("../auth/guard/auth.guard");
 
 const router = express.Router();
@@ -37,6 +37,11 @@ router.get(
   talksController.getMessages
 );
 
-router.post("/upload", authGuard(), upload.single("image"), talksController.uploadChatImage);
+router.post(
+  "/upload",
+  authGuard(),
+  uploadProductImage.single("image"),
+  talksController.uploadChatImage
+);
 
 module.exports = router;

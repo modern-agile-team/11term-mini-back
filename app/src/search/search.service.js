@@ -1,15 +1,20 @@
 "use strict";
 
+const { normalizeSearchKeyword } = require("../utils/searchKeyword.util");
+
 class SearchService {
   constructor(searchRepository) {
     this.searchRepository = searchRepository;
   }
 
   async saveSearchLog(keyword, userId = null) {
-    if (!keyword || keyword.trim() === "") {
+    const normalizedKeyword = normalizeSearchKeyword(keyword);
+
+    if (!normalizedKeyword) {
       return;
     }
-    await this.searchRepository.saveSearchLog(keyword.trim().toLowerCase(), userId);
+
+    await this.searchRepository.saveSearchLog(normalizedKeyword, userId);
   }
 
   async getPopularKeywords(limit = 10) {

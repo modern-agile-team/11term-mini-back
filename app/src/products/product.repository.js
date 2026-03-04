@@ -2,6 +2,7 @@
 
 const { execute } = require("./../config/db");
 const { PRODUCT_STATUS, TRENDING_CONFIG } = require("./product.constants");
+const { normalizeSearchKeyword } = require("../utils/searchKeyword.util");
 
 const QUERY = {
   SELECT_QUERY:
@@ -138,19 +139,14 @@ class ProductRepository {
         whereParams.push(...keywords);
         matchScoreSelect = "tm.match_score AS match_score";
       } else {
-        const titleWhereParts = [];
-        const scoreParts = [];
+        const normalizedValue = normalizeSearchKeyword(value);
 
-        for (const kw of keywords) {
-          scoreParts.push("CASE WHEN p.title LIKE ? THEN 1 ELSE 0 END");
-          scoreParams.push(`%${kw}%`);
-
-          titleWhereParts.push("p.title LIKE ?");
-          whereParams.push(`%${kw}%`);
+        if (!normalizedValue) {
+          wheres.push("1 = 0");
+        } else {
+          wheres.push("REPLACE(LOWER(p.title), ' ', '') LIKE ?");
+          params.push(`%${normalizedValue}%`);
         }
-
-        wheres.push(`(${titleWhereParts.join(" OR ")})`);
-        matchScoreSelect = `(${scoreParts.join(" + ")}) AS match_score`;
       }
     }
 

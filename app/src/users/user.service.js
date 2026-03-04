@@ -2,6 +2,7 @@
 
 const CustomError = require("../utils/customError");
 const { deleteFile } = require("../utils/file.util");
+const valivalidateImagesExist = require("../utils/image.validation");
 const path = require("path");
 
 class UserService {
@@ -80,7 +81,7 @@ class UserService {
     await this.userRepository.updateDescription(userId, summary);
   }
 
-  async updateProfile(userId, { nickname, summary, imageFile, deleteImage }) {
+  async updateProfile(userId, { nickname, summary, imageUrl, deleteImage }) {
     if (nickname !== undefined) {
       const existingUser = await this.userRepository.findUserByNickname(nickname);
 
@@ -102,16 +103,16 @@ class UserService {
         throw new CustomError("삭제할 프로필 이미지가 없습니다.", 400);
       }
 
-      const filePath = user.imageUrl.startsWith("/")
-        ? user.imageUrl.substring(1)
-        : user.imageUrl;
+      const filePath = user.imageUrl.startsWith("/") ? user.imageUrl.substring(1) : user.imageUrl;
 
       deleteFile(filePath);
 
       await this.userRepository.clearImageUrl(userId);
     }
 
-    if (imageFile) {
+    if (imageUrl !== undefined) {
+      await valivalidateImagesExist(imageUrl, "user");
+
       const user = await this.userRepository.findUserById(userId);
 
       if (user.imageUrl) {
@@ -121,8 +122,6 @@ class UserService {
 
         deleteFile(oldFilePath);
       }
-
-      const imageUrl = "/" + imageFile.path.replace(/\\/g, "/");
 
       await this.userRepository.updateImageUrl(userId, imageUrl);
     }

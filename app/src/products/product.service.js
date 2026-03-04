@@ -39,7 +39,7 @@ class ProductService {
       const productId = newProduct.insertId;
 
       if (images.length > 0) {
-        await validateImagesExist(images);
+        await validateImagesExist(images, "product");
 
         const result = await this.productRepository.saveProductImage(productId, images, connection);
 
@@ -193,7 +193,7 @@ class ProductService {
       }
 
       if (images !== undefined) {
-        await validateImagesExist(images);
+        await validateImagesExist(images, "product");
 
         await this.productRepository.deleteProductImage(productId, connection);
 
