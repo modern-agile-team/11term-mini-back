@@ -2,7 +2,6 @@
 
 const transaction = require("../config/transaction");
 const CustomError = require("../utils/customError");
-const buildImagePath = require("../utils/file.util");
 
 class ReviewService {
   constructor(reviewRepository, userRepository, productRepository) {
@@ -12,7 +11,7 @@ class ReviewService {
   }
 
   async createReview(reviewData) {
-    const { userId, sellerId, productId, rating, content, tags, files } = reviewData;
+    const { userId, sellerId, productId, rating, content, tags, imageUrls } = reviewData;
 
     return transaction(async (connection) => {
       const seller = await this.userRepository.findUserById(sellerId);
@@ -63,8 +62,7 @@ class ReviewService {
         await this.reviewRepository.createReviewTags(reviewId, tags, connection);
       }
 
-      if (files && files.length > 0) {
-        const imageUrls = files.map((file) => buildImagePath(file.filename));
+      if (imageUrls && imageUrls.length > 0) {
         await this.reviewRepository.saveReviewImages(reviewId, imageUrls, connection);
       }
 
@@ -84,7 +82,7 @@ class ReviewService {
   }
 
   async updateReview(userId, reviewId, updateData) {
-    const { rating, content, tags, files } = updateData;
+    const { rating, content, tags, imageUrls } = updateData;
 
     return transaction(async (connection) => {
       const review = await this.reviewRepository.findReviewById(reviewId);
@@ -113,10 +111,9 @@ class ReviewService {
         }
       }
 
-      if (files !== undefined) {
+      if (imageUrls !== undefined) {
         await this.reviewRepository.deleteReviewImages(reviewId, connection);
-        if (files.length > 0) {
-          const imageUrls = files.map((file) => buildImagePath(file.filename));
+        if (imageUrls.length > 0) {
           await this.reviewRepository.saveReviewImages(reviewId, imageUrls, connection);
         }
       }

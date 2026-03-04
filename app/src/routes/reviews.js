@@ -16,7 +16,6 @@ const {
   deleteReviewValidator,
 } = require("../validators/review.validator");
 const validate = require("../middleware/validate");
-const { uploadProductImage, MAX_IMAGE_COUNT } = require("../middleware/upload.middleware");
 const authGuard = require("../auth/guard/auth.guard");
 
 const router = express.Router();
@@ -33,7 +32,6 @@ router.get("/", getSellerReviewsValidator, validate, reviewController.getSellerR
 router.post(
   "/",
   authGuard(),
-  uploadProductImage.array("images", 3),
   createReviewValidator,
   validate,
   reviewController.createReview
@@ -42,7 +40,6 @@ router.post(
 router.patch(
   "/:reviewId",
   authGuard(),
-  uploadProductImage.array("images", 3),
   updateReviewValidator,
   validate,
   reviewController.updateReview
